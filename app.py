@@ -6,8 +6,8 @@ import folium
 
 APP_TITLE = 'Food Access and Analysis'
 
-def display_map(df, state):
-    df = df[df['State'] == state]
+def display_map():
+    #df = df[df['State'] == state]
 
     m =folium.Map(location = [38,-96.5], zoom_start = 5, scrollWheelZoom = False)
 
@@ -24,7 +24,7 @@ def main():
 
     #Display filters and map
     state = 'Alabama'
-    state_name = display_map(df_main, state)
+    display_map()
 
     # Display metrics
 
