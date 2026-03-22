@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import folium 
-#from streamlit_folium import st_folium
+from streamlit_folium import st_folium
 
 
 APP_TITLE = 'Food Access and Analysis'
@@ -10,6 +10,7 @@ def display_map():
     #df = df[df['State'] == state]
 
     m =folium.Map(location = [38,-96.5], zoom_start = 5, scrollWheelZoom = False)
+    return m
 
 def main():
     st.set_page_config(APP_TITLE)
@@ -24,7 +25,8 @@ def main():
 
     #Display filters and map
     state = 'Alabama'
-    display_map()
+    m = display_map()
+    st_folium(m, width = 700, height = 500)
 
     # Display metrics
 
