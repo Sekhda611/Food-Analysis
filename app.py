@@ -6,10 +6,10 @@ import pandas as pd
 
 APP_TITLE = 'Food Access and Analysis'
 
-'''def display_map(df, state):
+def display_map(df, state):
     df = df[df['State'] == state]
 
-    m =folium.Map(location = [38,-96.5], zoom_start = 5, scrollWheelZoom = False)'''
+    m =folium.Map(location = [38,-96.5], zoom_start = 5, scrollWheelZoom = False)
 
 def main():
     st.set_page_config(APP_TITLE)
@@ -18,11 +18,11 @@ def main():
     # Load Data
     df_main = pd.read_csv('s_master_dataset_only_common_counties.csv')
 
-    #st.write(df_main.head())
-    #st.write(df_main.shape)
-    #st.write(df_main.isna().sum())
+    st.write(df_main.head())
+    st.write(df_main.shape)
+    st.write(df_main.isna().sum())
 
-    # Display filters and map
+    #Display filters and map
     state = 'Alabama'
     state_name = display_map(df_main, state)
 
