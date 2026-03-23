@@ -1,3 +1,8 @@
 folium
 streamlit-folium
 plotly.express
+json
+sklearn-ensemble
+sklearn-model_selection
+RandomForestRegressor
+train_test_split
