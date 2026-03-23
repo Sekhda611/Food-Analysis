@@ -36,13 +36,13 @@ def main():
 if __name__ == '__main__':
     main()
 
-
+"""
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 
 # Load data
-df = pd.read_csv("master_dataset_only_common_counties.csv")
+df = pd.read_csv("s_master_dataset_only_common_counties.csv")
 
 st.title("Food Insecurity & Socioeconomic Dashboard")
 
@@ -116,6 +116,7 @@ st.plotly_chart(fig_scatter, use_container_width=True)
 # DATA TABLE
 st.subheader("Data Preview")
 st.dataframe(top10)
+
 """
 import streamlit as st
 import pandas as pd
