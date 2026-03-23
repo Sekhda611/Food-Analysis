@@ -3,7 +3,7 @@ streamlit-folium
 plotly.express
 json
 scikit-learn
-
+sklearn
 matplotlib
 seaborn
 numpy
