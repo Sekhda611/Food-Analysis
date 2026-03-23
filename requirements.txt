@@ -1,9 +1,13 @@
-folium
-streamlit-folium
+
 plotly.express
 json
-scikit-learn
-sklearn
 matplotlib
 seaborn
 numpy
+streamlit==1.33.0
+pandas==2.2.2
+numpy==1.26.4
+plotly==5.20.0
+folium==0.16.0
+streamlit-folium==0.18.0
+scikit-learn==1.4.2
