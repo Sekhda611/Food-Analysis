@@ -3,8 +3,7 @@ streamlit-folium
 plotly.express
 json
 scikit-learn
-RandomForestRegressor
-train_test_split
+
 matplotlib
 seaborn
 numpy
