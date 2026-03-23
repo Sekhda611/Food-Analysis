@@ -2,6 +2,9 @@ folium
 streamlit-folium
 plotly.express
 json
-sklearn
+scikit-learn
 RandomForestRegressor
 train_test_split
+matplotlib
+seaborn
+numpy
