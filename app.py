@@ -89,7 +89,7 @@ fig_bar = px.bar(
     y="Name",
     orientation="h",
     hover_data={
-        "Population": True if "Pop2010" in df.columns else False,
+        "Pop2010": True,
         "PovertyRate": True,
         "MedianFamilyIncome": True
     },
@@ -106,7 +106,7 @@ fig_scatter = px.scatter(
     x=x_var,
     y=y_var,
     hover_name="Name",
-    size="Population" if "Pop2010" in df.columns else None,
+    size="Pop2010" if "Pop2010" in df.columns else None,
     color="PovertyRate" if "PovertyRate" in df.columns else None,
     title=f"{x_var} vs {y_var}"
 )
