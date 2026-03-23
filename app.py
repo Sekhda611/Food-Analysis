@@ -42,9 +42,9 @@ import pandas as pd
 import plotly.express as px
 
 # Load data
-df = pd.read_csv("s_master_dataset_only_common_counties.csv")
+df = pd.read_csv("master_dataset_only_common_counties.csv")
 
-st.title("📊 Food Insecurity & Socioeconomic Dashboard")
+st.title("Food Insecurity & Socioeconomic Dashboard")
 
 # Sidebar controls
 st.sidebar.header("Filters")
@@ -58,7 +58,7 @@ df["County_State"] = df["County"] + ", " + df["State"]
 metric = st.sidebar.selectbox(
     "Select Metric for Top 10",
     [
-        "Food_Insecurity_Rate",
+        "Overall Foo Insecurity Rate",
         "PovertyRate",
         "MedianFamilyIncome",
         "snap_participation_rate"
@@ -82,7 +82,7 @@ top10 = df_grouped.sort_values(metric, ascending=False).head(10)
 
 st.subheader(f"Top 10 {level}s by {metric}")
 
-# 📊 BAR CHART
+# BAR CHART
 fig_bar = px.bar(
     top10,
     x=metric,
@@ -98,7 +98,7 @@ fig_bar = px.bar(
 
 st.plotly_chart(fig_bar, use_container_width=True)
 
-# 📈 SCATTER PLOT
+# SCATTER PLOT
 st.subheader("Scatter Plot Analysis")
 
 fig_scatter = px.scatter(
