@@ -58,7 +58,7 @@ df["County_State"] = df["County"] + ", " + df["State"]
 metric = st.sidebar.selectbox(
     "Select Metric for Top 10",
     [
-        "Overall Foo Insecurity Rate",
+        "Overall Food Insecurity Rate",
         "PovertyRate",
         "MedianFamilyIncome",
         "snap_participation_rate"
