@@ -30,6 +30,7 @@ def main():
         "snap_participation_rate"
         ]
     )
+    '''
     # Select variables for scatter plot
     x_var = st.sidebar.selectbox("X-axis", df.select_dtypes(include='number').columns)
     y_var = st.sidebar.selectbox("Y-axis", df.select_dtypes(include='number').columns)
@@ -67,6 +68,7 @@ def main():
     # DATA TABLE
     st.subheader("Data Preview")
     st.dataframe(top10)
+    '''
 
     st.write(df_main.head())
     st.write(df_main.shape)
