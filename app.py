@@ -80,7 +80,7 @@ def main():
     # Display metrics 
     if __name__ == '__main__':
     main()
-"""
+'''
 import streamlit as st
 import pandas as pd
 import folium 
@@ -246,5 +246,5 @@ st.subheader("Data Preview")
 st.dataframe(df.head(50))
 
 
-"""
+'''
 
