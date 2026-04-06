@@ -79,7 +79,8 @@ def main():
 
     # Display metrics 
     if __name__ == '__main__':
-    main()"""
+    main()
+    """
 import streamlit as st
 import pandas as pd
 import folium 
@@ -90,14 +91,6 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 
 st.set_page_config(layout="wide")
-
-st.title("Food Insecurity & Food Desert Analytics Dashboard")
-
-# LOAD DATA
-df = pd.read_csv("s_master_dataset_only_common_counties.csv")
-
-# Load GeoJSON (you need US counties geojson file)
-with open("st.set_page_config(layout="wide")
 
 st.title("Food Insecurity & Food Desert Analytics Dashboard")
 
