@@ -80,7 +80,7 @@ def main():
     st_folium(m, width = 700, height = 500)
 
     # Display metrics 
-    if __name__ == '__main__':
+if __name__ == '__main__':
     main()
 '''
 import streamlit as st
