@@ -3,6 +3,5 @@ numpy
 streamlit
 folium
 streamlit-folium
-json
 plotly
 scikit-learn
