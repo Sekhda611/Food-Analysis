@@ -5,8 +5,8 @@ import folium
 from streamlit_folium import st_folium
 import plotly.express as px
 import json
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
+#from sklearn.ensemble import RandomForestRegressor
+#from sklearn.model_selection import train_test_split
 #from streamlit_extras.stylable_container import stylable_container
 
 st.set_page_config(layout="wide")
@@ -57,7 +57,7 @@ features = [
 
 target = "Food_Insecurity_Rate"
 
-
+'''
 df_ml = df.dropna(subset=features + [target])
 
 X = df_ml[features]
@@ -69,7 +69,7 @@ model = RandomForestRegressor(n_estimators=100)
 model.fit(X_train, y_train)
 
 df["Predicted_Food_Insecurity"] = model.predict(df[features])
-
+'''
 
 # -----------------------------
 # SIDEBAR
