@@ -4,4 +4,3 @@ streamlit
 folium
 streamlit-folium
 plotly
-json
