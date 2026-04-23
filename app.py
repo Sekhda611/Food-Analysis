@@ -17,11 +17,14 @@ st.markdown("""
     </h1>
 """, unsafe_allow_html=True)
 
-# LOAD DATA
-df = pd.read_csv("master_dataset_only_common_counties.csv")
+#load data set
+def load_data():
+    return(pd.read_csv('master_dataset_only_common_counties.csv'))
+
+df = load_data()
 # Ensure FIPS is string
 df["CountyFIPS"] = df["CountyFIPS"].astype(str).str.zfill(5)
-df['Food_Insecurity_Rate'] =(df['Overall Food Insecurity Rate']*100).round(2)
+df['Food Insecurity Rate'] =(df['Overall Food Insecurity Rate']*100).round(2)
 df['Population'] = df['Pop2010'].round(1)
 df['Food Access Vulnerability Rate'] = ((df['Vulnerability_Score_PCA']).round(2)).copy()
 df['snap_participation_rate'] = (df['snap_participation_rate']*100).round(2)
@@ -36,7 +39,6 @@ st.subheader('Data Preview')
 st.dataframe(df.head(5))
 
 # SIDEBAR
-
 st.sidebar.header("Filters")
 
 level = st.sidebar.radio('Select Level', ['County', 'State'])
@@ -46,6 +48,7 @@ selected_states = st.sidebar.multiselect(
     options=sorted(df["State"].unique()),
     default=None
 )
+
 if selected_states:
     df = df[df["State"].isin(selected_states)]
 
@@ -59,6 +62,7 @@ else:
     df_grouped["Name"] = df_grouped["County"]
 
 top_n = st.sidebar.slider("Top N", 5, 20, 10)
+
 tab1, tab2, tab3, tab4 = st.tabs([
     "Overview",
     "Drivers",
@@ -66,8 +70,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "Insights"
 ])
 
-# KPI cards with Food Insecurity, Food Desert Index, SNAP Participation, Risk Index and Populaiton
-# Overview
+#Tab 1: Overview 
 with tab1:
     st.markdown('###')
     st.subheader("Key Insights")
@@ -136,7 +139,7 @@ with tab1:
     )
 
     st.plotly_chart(fig_bar, width='stretch')
-# Drivers
+#Tab 2 Drivers
 with tab2:
 
     st.subheader("What Drives Food Insecurity?")
@@ -202,7 +205,8 @@ with tab2:
     st.markdown("""
         **Insight:** Poverty and income are the strongest drivers of food insecurity.
         """)
-#Tab 3: MAP
+    
+# Tab 3 MAP
 with tab3:
 
     st.subheader("Geographic Distribution")
@@ -236,7 +240,7 @@ with tab3:
         fig_map.update_geos(visible=False)
     st.plotly_chart(fig_map, use_container_width=True, height=700)
 
-# Tab4 : Insights    
+# tab4 INSIGHTS
 with tab4:
 
     df["Risk_Level"] = pd.qcut(
@@ -282,3 +286,4 @@ with tab4:
         ### Impact:
         Targeting top 10% vulnerable counties could significantly reduce national food insecurity rates.
         """)
+    
