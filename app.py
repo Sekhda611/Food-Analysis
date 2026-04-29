@@ -1,7 +1,5 @@
-import streamlit as st
+      import streamlit as st
 import pandas as pd
-import folium 
-from streamlit_folium import st_folium
 import plotly.express as px
 import json
 
@@ -27,7 +25,7 @@ df["CountyFIPS"] = df["CountyFIPS"].astype(str).str.zfill(5)
 df['Food Insecurity Rate'] =(df['Overall Food Insecurity Rate']*100).round(2)
 df['Population'] = df['Pop2010'].round(1)
 df['Vulnerability Score'] = ((df['Vulnerability_Score_PCA']).round(2)).copy()
-df['SNAP Participation Rate'] = (df['snap_participation_rate']*100).round(2)
+df['snap_participation_rate'] = (df['snap_participation_rate']*100).round(2)
 df['food_insecurity_risk_index'] = (df['food_insecurity_risk_index']*100).round(2)
 
 state_level_count = pd.read_csv("county_level_count.csv")
@@ -94,6 +92,16 @@ us_state_abbrev = {
 
 df["State_code"] = df["State"].map(us_state_abbrev)
 # SIDEBAR
+st.subheader("Filter data based on state filter selection")
+
+selected_states = st.multiselect(
+    "Select State(s)",
+    options=sorted(df["State"].unique()),
+    default=None
+)
+
+if selected_states:
+    df = df[df["State"].isin(selected_states)]
 
 st.markdown('#####')
 st.subheader("Key Insights")
@@ -115,24 +123,25 @@ def kpi_card(title, value, color):
     """, unsafe_allow_html=True)
 
 with col1:
-    kpi_card("Food Insecurity",
-                f"{df['Food Insecurity Rate'].mean():.2f}%", "#ff6b6b")
+    kpi_card("Population",
+                f"{int(df['Population'].sum()):,}", "#6a4c93")
 
 with col2:
-    kpi_card("Vulnerability",
-                f"{df['Vulnerability Score'].mean():.2f}", "#4ecdc4")
-
-with col3:
-    kpi_card("SNAP",
-                f"{df['SNAP Participation Rate'].mean():.2f}%", "#1a535c")
-
-with col4:
     kpi_card("Number of Counties",
                 f"{len(df)}", "#ffa600")
 
+with col3:
+    kpi_card("SNAP",
+                f"{df['snap_participation_rate'].mean():.2f}%", "#1a535c")
+
+with col4:
+    kpi_card("Vulnerability",
+                f"{df['Vulnerability Score'].mean():.2f}", "#4ecdc4")
+    
 with col5:
-    kpi_card("Population",
-                f"{int(df['Population'].sum()):,}", "#6a4c93")
+    
+    kpi_card("Food Insecurity",
+                f"{df['Food Insecurity Rate'].mean():.2f}%", "#ff6b6b")
 st.markdown('####')
 tab1, tab2, tab3, tab4,tab5 = st.tabs([
     "Overview",
@@ -150,7 +159,7 @@ with tab1:  # or whatever position you gave
 
         metrics = ["MedianFamilyIncome", "PovertyRate", "unemployment_rate", 
                 "Cost Per Meal", "SNAP Participation Rate", "# of Food Insecure Persons Overall", 
-                "SNAP Threshold", "no_vehicle_rate", "Population, low access to store (%), 2019", 
+                "no_vehicle_rate", "Population, low access to store (%), 2019", 
                 "Children, low access to store (%), 2019", "Seniors, low access to store (%), 2019", 
                 "White, low access to store (%), 2019", "Black, low access to store (%), 2019", 
                 "Hispanic ethnicity, low access to store (%), 2019", "Asian, low access to store (%), 2019",
@@ -182,12 +191,6 @@ with tab1:  # or whatever position you gave
                 color=selected_metric,
                 scope="usa",
                 color_continuous_scale="blues",
-                labels = {"MedianFamilyIncome" : "Median Family Income", 
-                "PovertyRate" : "Poverty Rate (%)", 
-                "unemployment_rate" : "Unemployment Rate (%)", 
-                "Cost Per Meal" : "Cost Per Meal ($)", 
-                "obesity_pct" : "Obesity Percent", 
-                "diabetes_pct" : "Diabetes Percent"},
                 hover_data=['State', selected_metric]
             )
 
@@ -198,17 +201,12 @@ with tab1:  # or whatever position you gave
         with col2:
             st.subheader("Statewide Metric Distribution")
 
-            state_list = sorted(df["State"].unique().astype(str).tolist())
-            options = ["All States"] + state_list # This includes the all state option  
-            selected_state = st.selectbox("Select a state", options) 
-
-            if selected_state == "All States":
+            if selected_states == "All States":
                     df_filtered = df.copy()
                     title_suffix = "Across all US Counties"
             else:
-                df_filtered = df[df["State"]== selected_state]
-                title_suffix = f"in {selected_state}"
-
+                df_filtered = df[df["State"].isin(selected_states)]
+                title_suffix = f"in {selected_states}"
             fig_hist = px.histogram(
                 df_filtered,   
                 x=selected_metric,
@@ -226,119 +224,54 @@ with tab1:  # or whatever position you gave
             st.plotly_chart(fig_hist, use_container_width=True)
 
 with tab2:
-    df_select = df.copy()
+    
     level = st.radio('Select Level', ['County', 'State'], horizontal=True)
-
-    if level == "County":
-        selected_states = st.multiselect(
-        "Filter Counties by State(s)",
-        options=sorted(df["State"].dropna().unique()),
-        default=None, 
-        help="Select one or more states to compare their counties."
-    )
-        if selected_states:
-            df_select = df_select[df_select["State"].isin(selected_states)]
-        
-        # Assign name labels for the counties
-        df_select["Name"] = df_select["County"] + ", " + df_select["State"]
-    
-    else:
-        # If the user selects "State", we use the entire dataset to aggregate 
-        df_select = df_select.groupby("State").mean(numeric_only=True).round(2).reset_index()
-        df_select["Name"] = df_select["State"]
-    
-    # Part 3: Create the comparison chart 
-    st.markdown("---")
-    #st.subheader("Top Vulnerable Regions")
-
-    # Define a dictionary for the Food Desert columns
-    food_desert_map = {
-        "Food Desert Count (0.5 & 10 miles)": {"County" : "LILATracts_halfAnd10", 
-                                               "State" : "LILATracts_halfAnd10_flag"},
-        "Food Desert Count (1 & 10 miles)": {"County" : "LILATracts_1And10", 
-                                               "State" : "LILATracts_1And10_flag"},
-        "Food Desert Count (1 & 20 miles)": {"County" : "LILATracts_1And20", 
-                                               "State" : "LILATracts_1And20_flag"},
-        "Food Desert Count (Vehicle)": {"County" : "LILATracts_Vehicle", 
-                                               "State" : "LILATracts_Vehicle_flag"}
-    }
-    metric = st.selectbox(
-        "Select Metric to Rank",
-        [
-            "Vulnerability Score",
-            "Food Insecurity Rate",
-            "SNAP Participation Rate", 
-            "Food Desert Count (0.5 & 10 miles)", 
-            "Food Desert Count (1 & 10 miles)", 
-            "Food Desert Count (1 & 20 miles)", 
-            "Food Desert Count (Vehicle)"
-        ],
-        key="bar_metric"
-    )
-
-    top_n = st.slider("Top N", 5, 20, 10)
-
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader(f"Top {top_n} {level} by {metric}")
+        st.subheader("Top Vulnerable Regions")
 
-         # Determine which dataframe and column to use
-        if metric in food_desert_map:
-            target_col = food_desert_map[metric][level]
-            
-            if level == "State":
-                top_df = state_level_count.sort_values(target_col, ascending=False).head(top_n)
-                top_df["Name"] = top_df["State"]
-                hover_cols = [target_col] 
-            else:
-                # Create a temporary copy of the county counts
-                temp_county_df = county_level_count.copy()
-            
-                # Filter the data 
-                if selected_states:
-                    temp_county_df = temp_county_df[temp_county_df["State"].isin(selected_states)]
-            
-                # Sort 
-                top_df = temp_county_df.sort_values(target_col, ascending=False).head(top_n)
-                top_df["Name"] = top_df["County"] + ", " + top_df["State"]
-                hover_cols = ["State", target_col]
-                
+        # Aggregate if state level
+        if level == "State":
+            df_grouped = df.groupby("State").mean(numeric_only=True).round(2).reset_index()
+            df_grouped["Name"] = df_grouped["State"]
         else:
-            # Use the standard aggregated dataframe
-            target_col = metric 
-            top_df = df_select.sort_values(target_col, ascending=False).round(2).head(top_n)
-            # These columns exist in df_comparison because it's a copy of the main df
-            hover_cols = ["Population", "PovertyRate", "MedianFamilyIncome", target_col]
+            df_grouped = df.copy()
+            # df_grouped["County_State"] = df["County"] + ", " + df["State"]
+            df_grouped["Name"] = df_grouped["County"]
 
-
-        # This filter removes any column from hover_cols that isn't in top_df
-        valid_hover_cols = [c for c in hover_cols if c in top_df.columns]
-
-        fig_bar = px.bar(
-            top_df,
-            x=target_col,
-            y='Name',
-            orientation="h",
-            hover_data=valid_hover_cols, 
-            labels={
-                "Population": "Population", 
-                "PovertyRate": "Poverty Rate", 
-                "MedianFamilyIncome": "Median Family Income", 
-                target_col: metric
-            }
+        metric = st.selectbox(
+            "Select Metric",
+            [
+                "Vulnerability Score",
+                "Food Insecurity Rate",
+                "snap_participation_rate"
+            ],
+            key="bar_metric"
         )
-        # Make the chart shows the highest value at the top
-        fig_bar.update_layout(yaxis={'categoryorder':'total ascending'})
+       
+        #st.subheader(f"Top {top_df} {level} by {metric}")
+        if metric not in df_grouped.columns:
+            st.error(f"{metric} not found in data")
+        else:
+            top_df = df_grouped.sort_values(metric, ascending=False).round(2).head(10)
         
-        st.plotly_chart(fig_bar, use_container_width=True)
-        
+            y_col = 'Name'
+            fig_bar = px.bar(
+                top_df,
+                x=metric,
+                y=y_col,
+                orientation="h",
+                hover_data=["Population", "PovertyRate", "MedianFamilyIncome"]
+            )
+
+            st.plotly_chart(fig_bar, width='stretch')
 
     with col2:
 
         st.subheader("Data Summary")
-        st.markdown('######')
-        st.dataframe(df_select, use_container_width=True, height=400)
+        
+        st.dataframe(df_grouped, use_container_width=True, height=450)
 
 #Tab 2 Drivers
 with tab3:
@@ -349,7 +282,7 @@ with tab3:
     features = [
         "PovertyRate",
         "MedianFamilyIncome",
-        "SNAP Participation Rate"
+        "snap_participation_rate"
     ]
 
     target = "Food Insecurity Rate"
@@ -374,19 +307,17 @@ with tab3:
             ["Food Insecurity Rate"],
             key="scatter_y"
         )
-        if "PovertyRate" in top_df.columns:
-            fig_scatter = px.scatter(
-                top_df,
-                x=x_var,
-                y=y_var,
-                size="Population",
-                color="food_insecurity_risk_index",
-                hover_name="Name"
-            )
 
-            st.plotly_chart(fig_scatter, width='stretch')
-        else:
-            st.info("Scatter plot analysis is not available if you select a food desert count metric in State Breakdown.")
+        fig_scatter = px.scatter(
+            df_grouped,
+            x=x_var,
+            y=y_var,
+            size="Population",
+            color="food_insecurity_risk_index",
+            hover_name="Name"
+        )
+
+        st.plotly_chart(fig_scatter, width='stretch')
 
     # Heatmap
     
@@ -414,24 +345,11 @@ with tab4:
 
     st.subheader("Geographic Distribution")
 
-    st.subheader("Filters")
-
-
-    selected_states = st.multiselect(
-        "Select State(s)",
-        options=sorted(df["State"].unique()),
-        default=None
-    )
-
-    if selected_states:
-        df = df[df["State"].isin(selected_states)]
-
-
     fig_map = px.choropleth(
         df,
         geojson=counties_geojson,
         locations="CountyFIPS",
-        color="Food Insecurity Rate",
+        color=metric,
         color_continuous_scale=[
             [0, "#fff5eb"],
             [0.5, "#fd8d3c"],
@@ -444,8 +362,7 @@ with tab4:
             "Population",
             "PovertyRate",
             "MedianFamilyIncome",
-            "Food Insecurity Rate", 
-            "Vulnerability Score"
+            "Food Insecurity Rate"
             
         ]
 
@@ -460,33 +377,49 @@ with tab4:
 # tab4 INSIGHTS
 with tab5:
 
-    df["Risk_Level"] = pd.qcut(
-        df["Vulnerability Score"],
-        q=3,
-        labels=["Low", "Medium", "High"]
-    )
-    st.subheader("Food Insecurity Distribution by Risk Level")
+    col1, col2 = st.columns(2)
+    with col1:
 
-    fig_box = px.box(
-        df,
-        x="Risk_Level",
-        y="Food Insecurity Rate",
-        color="Risk_Level",
-        points="outliers"
-    )
+        df["Risk_Level"] = pd.qcut(
+            df["Vulnerability Score"],
+            q=3,
+            labels=["Low", "Medium", "High"]
+        )
+        st.subheader("Food Insecurity Distribution by Risk Level")
 
-    st.plotly_chart(fig_box, use_container_width=True)
+        fig_box = px.box(
+            df,
+            x="Risk_Level",
+            y="Food Insecurity Rate",
+            color="Risk_Level",
+            points="outliers"
+            
+        )
+
+        st.plotly_chart(fig_box, use_container_width=True)
     
-    df["Income_Group"] = pd.qcut(df["MedianFamilyIncome"], q=3, labels=["Low", "Mid", "High"])
+    with col2:
+        df["Income_Group"] = pd.qcut(df["MedianFamilyIncome"], q=3, labels=["Low", "Mid", "High"])
+        st.subheader("Risk Level Comaprison by Income Groups")
 
-    fig_stack = px.histogram(
-        df,
-        x="Income_Group",
-        color="Risk_Level",
-        barmode="stack"
-    )
+        fig_stack = px.histogram(
+            df,
+            x="Income_Group",
+            color="Risk_Level",
+            barmode="stack",
+            category_orders={
+                "Income_Group": ["Low", "Mid", "High"],
+                "Risk_Level": ["Low Risk", "Medium Risk", "High Risk"] 
+                },
+                color_discrete_map= {
+                "Low" : "#8DD3C7", 
+                "Medium" : "#FFFFB3", 
+                "High" : "#FB8072"
+                }
+        )
 
-    st.plotly_chart(fig_stack, use_container_width=True)
+        st.plotly_chart(fig_stack, use_container_width=True)
+
     st.markdown(""" ## Policy Insights""")
     col1, col2 = st.columns(2)
     with col1:
@@ -507,4 +440,4 @@ with tab5:
     st.markdown(""" ### Impact: 
                 Targeting top 10% vulnerable counties could significantly reduce national food insecurity rates.
         """)
-    
+       
