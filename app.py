@@ -27,6 +27,9 @@ df['Population'] = df['Pop2010'].round(1)
 df['Vulnerability Score'] = ((df['Vulnerability_Score_PCA']).round(2)).copy()
 df['snap_participation_rate'] = (df['snap_participation_rate']*100).round(2)
 df['food_insecurity_risk_index'] = (df['food_insecurity_risk_index']*100).round(2)
+df["unemployment_rate"] = (df["unemployment_rate"]*100).round(2)
+df['no_vehicle_rate'] = (df["no_vehicle_rate"]*100).round(2)
+
 
 state_level_count = pd.read_csv("county_level_count.csv")
 county_level_count = pd.read_csv("food_deserts_count.csv")
