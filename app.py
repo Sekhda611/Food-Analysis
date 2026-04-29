@@ -30,7 +30,6 @@ df['food_insecurity_risk_index'] = (df['food_insecurity_risk_index']*100).round(
 df["unemployment_rate"] = (df["unemployment_rate"]*100).round(2)
 df['no_vehicle_rate'] = (df["no_vehicle_rate"]*100).round(2)
 
-
 state_level_count = pd.read_csv("county_level_count.csv")
 county_level_count = pd.read_csv("food_deserts_count.csv")
 
@@ -229,6 +228,7 @@ with tab1:  # or whatever position you gave
 with tab2:
     
     level = st.radio('Select Level', ['County', 'State'], horizontal=True)
+    top_n = st.slider("Top N", 5, 20, 10)
     col1, col2 = st.columns(2)
 
     with col1:
@@ -252,12 +252,11 @@ with tab2:
             ],
             key="bar_metric"
         )
-       
-        #st.subheader(f"Top {top_df} {level} by {metric}")
+         #st.subheader(f"Top {top_df} {level} by {metric}")
         if metric not in df_grouped.columns:
             st.error(f"{metric} not found in data")
         else:
-            top_df = df_grouped.sort_values(metric, ascending=False).round(2).head(10)
+            top_df = df_grouped.sort_values(metric, ascending=False).round(2).head(top_n)
         
             y_col = 'Name'
             fig_bar = px.bar(
@@ -267,14 +266,74 @@ with tab2:
                 orientation="h",
                 hover_data=["Population", "PovertyRate", "MedianFamilyIncome"]
             )
+            fig_bar.update_layout(yaxis={'categoryorder':'total ascending'})
+            
 
             st.plotly_chart(fig_bar, width='stretch')
 
     with col2:
-
-        st.subheader("Data Summary")
+        #levels = st.radio('Select Level', ['County', 'State'], horizontal=True,key="level_selector_main")
+        st.subheader("Top Food desert Count by Definitions")
+        food_desert_map = {
+            "Food Desert Count (0.5 & 10 miles)": {"County" : "LILATracts_halfAnd10", 
+                                                "State" : "LILATracts_halfAnd10_flag"},
+            "Food Desert Count (1 & 10 miles)": {"County" : "LILATracts_1And10", 
+                                                "State" : "LILATracts_1And10_flag"},
+            "Food Desert Count (1 & 20 miles)": {"County" : "LILATracts_1And20", 
+                                                "State" : "LILATracts_1And20_flag"},
+            "Food Desert Count (Vehicle)": {"County" : "LILATracts_Vehicle", 
+                                                "State" : "LILATracts_Vehicle_flag"}
+        }
+        food_metric = st.selectbox(
+            "Select Metric to Rank",
+            [ 
+                "Food Desert Count (0.5 & 10 miles)", 
+                "Food Desert Count (1 & 10 miles)", 
+                "Food Desert Count (1 & 20 miles)", 
+                "Food Desert Count (Vehicle)"
+            ],
+            key="bar_metric_main"
+        )
+        #top_n = st.slider("Top N", 5, 20, 10)
+        target_col = food_desert_map[food_metric][level]
+                
+        if level == "State":
+            top_df = state_level_count.sort_values(target_col, ascending=False).head(top_n)
+            top_df["Name"] = top_df["State"]
+            hover_cols = [target_col] 
+        else:
+            # Create a temporary copy of the county counts
+            temp_county_df = county_level_count.copy()
         
-        st.dataframe(df_grouped, use_container_width=True, height=450)
+            # Filter the data 
+            if selected_states:
+                temp_county_df = temp_county_df[temp_county_df["State"].isin(selected_states)]
+        
+            # Sort 
+            top_df = temp_county_df.sort_values(target_col, ascending=False).head(top_n)
+            top_df["Name"] = top_df["County"] + ", " + top_df["State"]
+            hover_cols = ["State", target_col]
+        valid_hover_cols = [c for c in hover_cols if c in top_df.columns]
+        fig_bar = px.bar(
+            top_df,
+            x=target_col,
+            y='Name',
+            orientation="h",
+            hover_data=valid_hover_cols, 
+            labels={
+                
+                target_col: food_metric
+            }
+        )
+        # Make the chart shows the highest value at the top
+        fig_bar.update_layout(yaxis={'categoryorder':'total ascending'})
+            
+        st.plotly_chart(fig_bar, use_container_width=True)
+
+
+    st.subheader("Data Summary")
+    
+    st.dataframe(df_grouped, use_container_width=True, height=450)
 
 #Tab 2 Drivers
 with tab3:
@@ -348,16 +407,39 @@ with tab4:
 
     st.subheader("Geographic Distribution")
 
+    # ✅ Metric selector (fixes undefined variable bug)
+    map_metric = st.selectbox(
+        "Select Metric for Map",
+        [
+            "Food Insecurity Rate",
+            "Vulnerability Score",
+            "PovertyRate",
+            "snap_participation_rate"
+        ],
+        key="map_metric"
+    )
+
+    # ✅ Filter data safely
+    df_filtered = df.copy()
+    if selected_states:
+        df_filtered = df_filtered[df_filtered["State"].isin(selected_states)]
+
+    # ✅ Check data
+    if df_filtered.empty:
+        st.warning("No data available for selected states")
+        st.stop()
+
+    if map_metric not in df_filtered.columns:
+        st.error(f"{map_metric} not found in dataset")
+        st.stop()
+
     fig_map = px.choropleth(
-        df,
+        df_filtered,
         geojson=counties_geojson,
         locations="CountyFIPS",
-        color=metric,
-        color_continuous_scale=[
-            [0, "#fff5eb"],
-            [0.5, "#fd8d3c"],
-            [1, "#bd0026"]
-        ],
+        #featureidkey="id",  # 🔥 CRITICAL FIX
+        color=map_metric,
+        color_continuous_scale="Reds",
         scope="usa",
         hover_data=[
             "County",
@@ -366,16 +448,18 @@ with tab4:
             "PovertyRate",
             "MedianFamilyIncome",
             "Food Insecurity Rate"
-            
         ]
-
     )
 
-    if selected_states:
-        fig_map.update_geos(fitbounds="locations", visible=False)
-    else:
-        fig_map.update_geos(visible=False)
+    fig_map.update_geos(
+        fitbounds="locations" if selected_states else None,
+        visible=False
+    )
+
+    fig_map.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
     st.plotly_chart(fig_map, use_container_width=True, height=700)
+
 
 # tab4 INSIGHTS
 with tab5:
@@ -443,4 +527,3 @@ with tab5:
     st.markdown(""" ### Impact: 
                 Targeting top 10% vulnerable counties could significantly reduce national food insecurity rates.
         """)
-       
