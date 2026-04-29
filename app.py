@@ -138,14 +138,14 @@ with col3:
 
 with col4:
     kpi_card("Vulnerability",
-                f"{df['Vulnerability Score'].mean():.2f}", "#4ecdc4")
+                f"{df['Vulnerability Score'].mean():.2f}%", "#4ecdc4")
     
 with col5:
     
     kpi_card("Food Insecurity",
                 f"{df['Food Insecurity Rate'].mean():.2f}%", "#ff6b6b")
 st.markdown('####')
-tab1, tab2, tab3, tab4,tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Overview",
     "State Breakdown",
     "Drivers",
