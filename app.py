@@ -479,7 +479,12 @@ with tab5:
             x="Risk_Level",
             y="Food Insecurity Rate",
             color="Risk_Level",
-            points="outliers"
+            points="outliers",
+            color_discrete_map = {
+                "Low": "#0072B2",      # blue
+                "Medium": "#F0E442",   # yellow
+                "High": "#D55E00"      # orange-red
+            }
             
         )
 
@@ -498,10 +503,10 @@ with tab5:
                 "Income_Group": ["Low", "Mid", "High"],
                 "Risk_Level": ["Low Risk", "Medium Risk", "High Risk"] 
                 },
-                color_discrete_map= {
-                "Low" : "#8DD3C7", 
-                "Medium" : "#FFFFB3", 
-                "High" : "#FB8072"
+                color_discrete_map = {
+                    "Low": "#0072B2",      # blue
+                    "Medium": "#F0E442",   # yellow
+                    "High": "#D55E00"      # orange-red
                 }
         )
 
