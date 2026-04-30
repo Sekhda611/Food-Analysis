@@ -232,7 +232,7 @@ with tab2:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("Top Vulnerable Regions")
+        st.subheader(f"Top {top_n} {level} Vulnerable Regions")
 
         # Aggregate if state level
         if level == "State":
@@ -273,7 +273,7 @@ with tab2:
 
     with col2:
         #levels = st.radio('Select Level', ['County', 'State'], horizontal=True,key="level_selector_main")
-        st.subheader("Top Food desert Count by Definitions")
+        st.subheader(f"Top {top_n} {level} Food desert Count by Definitions")
         food_desert_map = {
             "Food Desert Count (0.5 & 10 miles)": {"County" : "LILATracts_halfAnd10", 
                                                 "State" : "LILATracts_halfAnd10_flag"},
