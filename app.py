@@ -30,6 +30,7 @@ df['food_insecurity_risk_index'] = (df['food_insecurity_risk_index']*100).round(
 df["unemployment_rate"] = (df["unemployment_rate"]*100).round(2)
 df['no_vehicle_rate'] = (df["no_vehicle_rate"]*100).round(2)
 
+# Food desert definitions dataset
 state_level_count = pd.read_csv("county_level_count.csv")
 county_level_count = pd.read_csv("food_deserts_count.csv")
 
@@ -93,8 +94,8 @@ us_state_abbrev = {
 }
 
 df["State_code"] = df["State"].map(us_state_abbrev)
-# SIDEBAR
-st.subheader("Filter data based on state filter selection")
+#filter for every tab
+st.subheader("State(s) filter selection ")
 
 selected_states = st.multiselect(
     "Select State(s)",
@@ -105,7 +106,6 @@ selected_states = st.multiselect(
 if selected_states:
     df = df[df["State"].isin(selected_states)]
 
-st.markdown('#####')
 st.subheader("Key Insights")
 
 col1, col2, col3, col4, col5 = st.columns(5)
@@ -138,14 +138,14 @@ with col3:
 
 with col4:
     kpi_card("Vulnerability",
-                f"{df['Vulnerability Score'].mean():.2f}%", "#4ecdc4")
+                f"{df['Vulnerability Score'].mean():.2f}", "#4ecdc4")
     
 with col5:
     
     kpi_card("Food Insecurity",
                 f"{df['Food Insecurity Rate'].mean():.2f}%", "#ff6b6b")
 st.markdown('####')
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4,tab5 = st.tabs([
     "Overview",
     "State Breakdown",
     "Drivers",
@@ -155,7 +155,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 
 #Tab 1: Overview 
 
-with tab1:  # or whatever position you gave
+with tab1:
 
     if df is not None:
 
@@ -224,15 +224,15 @@ with tab1:  # or whatever position you gave
             )
 
             st.plotly_chart(fig_hist, use_container_width=True)
-
+#Tab2 state breakdown
 with tab2:
     
     level = st.radio('Select Level', ['County', 'State'], horizontal=True)
     top_n = st.slider("Top N", 5, 20, 10)
     col1, col2 = st.columns(2)
-
+    
     with col1:
-        st.subheader(f"Top {top_n} {level} Vulnerable Regions")
+        st.subheader(f"Top {top_n} {level} by Vulnerable Regions")
 
         # Aggregate if state level
         if level == "State":
@@ -272,7 +272,7 @@ with tab2:
             st.plotly_chart(fig_bar, width='stretch')
 
     with col2:
-        #levels = st.radio('Select Level', ['County', 'State'], horizontal=True,key="level_selector_main")
+
         st.subheader(f"Top {top_n} {level} Food desert Count by Definitions")
         food_desert_map = {
             "Food Desert Count (0.5 & 10 miles)": {"County" : "LILATracts_halfAnd10", 
@@ -335,7 +335,7 @@ with tab2:
     
     st.dataframe(df_grouped, use_container_width=True, height=450)
 
-#Tab 2 Drivers
+#Tab 3 Drivers
 with tab3:
 
     st.subheader("What Drives Food Insecurity?")
@@ -344,7 +344,8 @@ with tab3:
     features = [
         "PovertyRate",
         "MedianFamilyIncome",
-        "snap_participation_rate"
+        "unemployment_rate",
+        "no_vehicle_rate"
     ]
 
     target = "Food Insecurity Rate"
@@ -402,12 +403,12 @@ with tab3:
         **Insight:** Poverty and income are the strongest drivers of food insecurity.
         """)
     
-# Tab 3 MAP
+# Tab 4 MAP
 with tab4:
 
     st.subheader("Geographic Distribution")
 
-    # ✅ Metric selector (fixes undefined variable bug)
+    # Metric selector (fixes undefined variable bug)
     map_metric = st.selectbox(
         "Select Metric for Map",
         [
@@ -419,12 +420,12 @@ with tab4:
         key="map_metric"
     )
 
-    # ✅ Filter data safely
+    # Filter data safely
     df_filtered = df.copy()
     if selected_states:
         df_filtered = df_filtered[df_filtered["State"].isin(selected_states)]
 
-    # ✅ Check data
+    # Check data
     if df_filtered.empty:
         st.warning("No data available for selected states")
         st.stop()
@@ -437,7 +438,7 @@ with tab4:
         df_filtered,
         geojson=counties_geojson,
         locations="CountyFIPS",
-        #featureidkey="id",  # 🔥 CRITICAL FIX
+        #featureidkey="id", 
         color=map_metric,
         color_continuous_scale="Reds",
         scope="usa",
@@ -461,7 +462,7 @@ with tab4:
     st.plotly_chart(fig_map, use_container_width=True, height=700)
 
 
-# tab4 INSIGHTS
+# tab 5 INSIGHTS
 with tab5:
 
     col1, col2 = st.columns(2)
@@ -480,10 +481,10 @@ with tab5:
             y="Food Insecurity Rate",
             color="Risk_Level",
             points="outliers",
-            color_discrete_map= { 
-                "Low" : "#8DD3C7",
-                "Medium" : "#E3E318", 
-                "High" : "#FB8072" 
+            color_discrete_map= {
+                "Low" : "#8DD3C7", 
+                "Medium" : "#FFFFB3", 
+                "High" : "#FB8072"
             }
             
         )
@@ -502,12 +503,12 @@ with tab5:
             category_orders={
                 "Income_Group": ["Low", "Mid", "High"],
                 "Risk_Level": ["Low Risk", "Medium Risk", "High Risk"] 
-                },
-                color_discrete_map= { 
-                    "Low" : "#8DD3C7",
-                    "Medium" : "#E3E318", 
-                    "High" : "#FB8072" 
-                }
+            },
+            color_discrete_map= {
+                "Low" : "#8DD3C7", 
+                "Medium" : "#FFFFB3", 
+                "High" : "#FB8072"
+            }
         )
 
         st.plotly_chart(fig_stack, use_container_width=True)
