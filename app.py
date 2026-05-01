@@ -144,7 +144,7 @@ with col5:
     
     kpi_card("Food Insecurity",
                 f"{df['Food Insecurity Rate'].mean():.2f}%", "#ff6b6b")
-#st.markdown('####')
+st.markdown('---')
 tab1, tab2, tab3, tab4,tab5 = st.tabs([
     "Overview",
     "State Breakdown",
