@@ -252,7 +252,7 @@ with tab2:
             ],
             key="bar_metric"
         )
-         #st.subheader(f"Top {top_df} {level} by {metric}")
+        
         if metric not in df_grouped.columns:
             st.error(f"{metric} not found in data")
         else:
@@ -329,11 +329,6 @@ with tab2:
         fig_bar.update_layout(yaxis={'categoryorder':'total ascending'})
             
         st.plotly_chart(fig_bar, use_container_width=True)
-
-
-    st.subheader("Data Summary")
-    
-    st.dataframe(df_grouped, use_container_width=True, height=450)
 
 #Tab 3 Drivers
 with tab3:
