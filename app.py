@@ -335,7 +335,7 @@ with tab3:
 
     st.subheader("What Drives Food Insecurity?")
     df['PovertyRate'] = df['PovertyRate'].round(2)
-    df['MedianFamilyIncome'] = df['MedianFamilyIncome'].round(2)
+    #df['MedianFamilyIncome'] = df['MedianFamilyIncome']
     features = [
         "PovertyRate",
         "MedianFamilyIncome",
